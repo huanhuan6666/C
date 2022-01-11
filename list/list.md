@@ -161,6 +161,8 @@ int div();
 int (*pfunc)() = &add;//函数指针
 int (*pfuncarr[3])() = {&add, &min, &div};//函数指针的数组
 ```
+pfunc就是个**变量**，变量当然可以后面加上[3]写成数组的样子啊~
+
 这玩意的用处好像还大一点，如果多个条件下调用的函数类型一致，那么可以做成个“函数表”，下面这么写更方便：
 ```cpp
 int (*pfuncarr[3])() = {add, min, div};
@@ -171,3 +173,37 @@ else if(...)
 else
   pfuncarr[2](); //调用div
 ```
+
+### 回调函数
+函数作为函数的参数，（哈哈原来C语言也能函数式啊
+
+我们有了函数指针变量，变量当然可以作为函数的参数啊，本质还是传指针：
+```cpp
+int add(int a, int b)
+{
+  return a + b;
+}
+int div(int a, int b)
+{
+  return a/b;
+}
+void myfunc(int a, int b, int(*pfunc)(int a, int b))
+{
+  int a = 0;
+  a = pfunc(x, y); //这就是回调！
+  printf("%d", a);
+}
+int main()
+{
+  int a = 1, b = 2;
+  myfunc(a, b, add);
+  myfunc(a, b, div);//所谓多态
+}
+```
+突然觉得C语言有了回调也能实现多态。。
+**多态**的核心就在于子类对于父类的虚函数重写以及父类指针或引用指向子类对象。
+
+回调的话：
+`myfunc(int a, int b, int(*pfunc)(int a, int b))`中的`int(*pfunc)(int a, int b)`参数相当于定义了一个虚函数，我们自己实现了`add`和`div`不就是虚函数重写么。调用`myfunc`就相当于父类指针去调用子类所实现的`pfunc`，传入参数不同就相当于父类指针指向不同的子类，这不就多态了么。
+
+而且看样子还符合开闭原则，如果这样的话那回调属于是神中神了，哈哈面向对象太多了（
