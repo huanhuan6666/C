@@ -2,7 +2,7 @@
 ** MEMWATCH.C
 ** Nonintrusive ANSI C memory leak / overwrite detection
 ** Copyright (C) 1992-2003 Johan Lindh
-** All rights reserved.
+** All rights reserved. 
 ** Version 2.71
 
 	This file is part of MEMWATCH.
