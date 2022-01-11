@@ -21,7 +21,7 @@ int DesEnc(
         int            nInDataLen,
         unsigned char *pOutData,
         int           *pOutDataLen);
-
+ 
 //加密等于4k的数据
 int DesEnc_raw(
         unsigned char *pInData,
