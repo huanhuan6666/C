@@ -1,9 +1,6 @@
-//
-// Created by Administrator on 2022/1/8.
-//
 #include "config_op.h"
 
-//写配置项
+//写配置项 
 int wirte_config(const char *filename/*in*/, const char *key/*in*/, const char *value/*in*/) {
     int     ret = 0, key_exist = 0;
     FILE    *fp = NULL;
