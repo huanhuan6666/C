@@ -1,6 +1,3 @@
-//
-// Created by Administrator on 2022/1/8.
-//
 #ifndef TESTCONFIG_CONFIG_OP_H
 #define TESTCONFIG_CONFIG_OP_H
 
