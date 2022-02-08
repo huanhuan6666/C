@@ -1,4 +1,56 @@
 # C相关
+
+## 杂
+### 关于gcc/make
+```cpp
+gcc -E hello.c > hello.i //预处理
+gcc -S hello.i -o hello.s //编译
+gcc -c hello.s -o hello.o //汇编
+gcc hello.o -o hello //链接生成可执行文件hello
+//当然也可以一步到位：
+gcc hello.c -o hello
+```
+用gcc和make都能编译生成可执行文件，make基本用法如下：
+```cpp
+make hello
+```
+会自动寻找hello.c文件并且`cc hello.c -o hello`，其中cc默认就是gcc。
+
+make的强大之处在于可以设置复杂的编译选项，即**makefile文件**，需要手动编写。
+
+### 关于makefile文件的编写
+
+### 头文件一定要包
+gcc的报错很圆滑，很多错误不报错而是报警告，比如下面的代码：
+```cpp
+#include<stdio.h>
+#include<errno.h>
+int main()
+{
+	FILE *fp;
+	fp = fopen("tmp", "r");
+	if(fp == NULL)
+	{
+		fprintf(stderr, "ERROR: %s", strerror(errno));
+		exit(1);
+	}
+	puts("OK!");
+	exit(0);
+}
+```
+只是简单报警告如下：
+```cpp
+a.c:9:28: warning: format ‘%s’ expects argument of type ‘char *’, but argument 3 has type ‘int’ [-Wformat=]
+   fprintf(stderr, "ERROR: %s", strerror(errno));
+                           ~^   ~~~~~~~~~~~~~~~
+                           %d
+```
+从这里可以看出，对于没有包头文件的库函数，编译器认为它**返回int**，从警告也能看出，虽然警告但是`./a.out`就会**段错误**。
+
+因此警告的风险也很大，要千万记住库函数包好对应头文件：
+
+最最常见的，`malloc`函数返回`void *`，空指针可以赋值给任何类型指针并且任何类型指针都能给空指针赋值。因此`(int *)malloc`的强转**完全多此一举**，警告多半是因为没有包`stdlib.h`头文件，**根本不需要强转**。
+
 ## 指针，数组，函数
 
 ### 指针数组
