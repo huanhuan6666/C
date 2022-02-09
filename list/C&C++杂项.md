@@ -19,7 +19,82 @@ make hello
 make的强大之处在于可以设置复杂的编译选项，即**makefile文件**，需要手动编写。
 
 ### 关于makefile文件的编写
+平时写小程序的时候就一个源文件，或者顶多`main.c`,`src.c`,`src.h`三个文件，只需要简单`gcc`或者`make`就完事了。
 
+但是一个大的项目里面涉及到很多文件和模块，这些模块不断合并最后生成最终的proc可执行文件，依赖结构类似一颗**倒置树**。因此需要makefile文件里面描述**本项目的编译过程和依赖关系**。
+
+输入`make`命令后会自动执行**本项目**内的`makefile`文件，常见的也有`Makefile`文件，不管`makefile`还是`Makefile`文件都可以并存，并存的话`make`命令默认执行`makefile`.
+
+makefile基本格式为：
+```cpp
+目标名: 依赖文件(空格隔开)
+	获取目标的命令
+```
+依赖关系是**倒置树**，因此先从根开始写起，例子如下：要从tool1.c, tool2.c, main.c获取最终的mytool可执行文件
+```cpp
+mytool: main.o tool1.o tool2.o
+	gcc main.o tool1.o tool2.o -o mytool
+main.o: main.c
+	gcc -c main.c -o main.o -Wall -g      //-Wall表示显示所有警告,-g调试选项，这都是gcc的选项
+tool1.o: tool1.c
+	gcc -c tool1.c -o tool1.o
+tool2.o: tool2.c
+	gcc -c tool2.c -o tool2.o
+```
+可以看到makefile里根本**不涉及头文件**，因为都是include进去的。
+
+更强大的makefile在更新某个源文件时，会比较.o文件和.c文件的**时间戳**来判断哪些gcc确实需要重新执行，而没更新.c文件就不用重新gcc了，节省了开销。
+
+一般我们在makefile文件里都加上clean功能，删除所有.o和可执行文件
+```cpp
+clean:
+	rm *.o mytool -rf
+```
+
+#### 高级点的写法
+其实就是变量的使用：
+* 可以用变量指定生成对象OBJS，上文中`main.o tool1.o tool2.o`一大串不好写，于是定义一个变量OBJS表示，用`$(OBJS)`来访问
+* 可以指定编译器CC，C语言一般为gcc，即`CC=gcc`，当然如果C++的话就是`g++`，同样用`$(CC)`访问
+* 可以指定编译选项CFLAGS+=在原来基础上增加选项，同样`$(CFLAGS)`访问
+```cpp
+OBJS = main.o tool1.o tool2.o //OBJS表示对象
+CC=gcc                         //CC选择编译器
+CFLAGS+= -c -Wall -g           //添加gcc编译选项
+mytool: $(OBJS)                //使用变量用$(OBJS)的格式
+	$(CC) $(OBJS) -o mytool
+main.o: main.c
+	$(CC) $(CFLAGS) main.c -o main.o     
+tool1.o: tool1.c
+	$(CC) $(CFLAGS) tool1.c -o tool1.o
+tool2.o: tool2.c
+	$(CC) $(CFLAGS) tool2.c -o tool2.o
+```
+
+但是这样还是累的要死，重复工作还是太多，比如每次获取一个目标时，依赖文件和目标文件需要重复写，可以用`$^`向上箭头来指代依赖文件，用`$@`指代目标文件，因此如下：
+```cpp
+OBJS = main.o tool1.o tool2.o //OBJS表示对象
+CC=gcc                         //CC选择编译器
+CFLAGS+= -c -Wall -g           //添加gcc编译选项
+mytool: $(OBJS)                //使用变量用$(OBJS)的格式
+	$(CC) $^ -o $@
+main.o: main.c
+	$(CC) $(CFLAGS) $^ -o $@     //获取每个目标文件时都可以用$^和$@来简写
+tool1.o: tool1.c
+	$(CC) $(CFLAGS) $^ -o $@
+tool2.o: tool2.c
+	$(CC) $(CFLAGS) $^ -o $@
+```
+
+更间接的，下面三个.o文件的工作都是一样的，直接通配符匹配：
+```cpp
+OBJS = main.o tool1.o tool2.o 
+CC=gcc                        
+CFLAGS+= -c -Wall -g          
+mytool: $(OBJS)               
+	$(CC) $^ -o $@
+%.o: %.c                        //通配符匹配
+	$(CC) $(CFLAGS) $^ -o $@
+```
 ### 头文件一定要包
 gcc的报错很圆滑，很多错误不报错而是报警告，比如下面的代码：
 ```cpp
