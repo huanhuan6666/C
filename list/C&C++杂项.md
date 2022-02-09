@@ -95,7 +95,18 @@ union name_un
 };
 sizeof(nama_un) = 8; //这个共用体的大小就是double的大小8
 ```
-
+结构体和共用体嵌套使用例如下：
+```cpp
+union 
+{
+	struct 
+	{
+		uint16_t i;
+		uint16_t j;
+	}x;
+	int32_t y;
+};
+```
 
 ## 指针，数组，函数
 
